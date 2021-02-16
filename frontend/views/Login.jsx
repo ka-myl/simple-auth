@@ -21,7 +21,6 @@ const LoginView = () => {
       history.push('/');
     } catch (err) {
       setError(err);
-    } finally {
       setLoading(false);
     }
   };

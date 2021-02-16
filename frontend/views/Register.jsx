@@ -21,7 +21,6 @@ const RegisterView = () => {
       history.push('/login');
     } catch (err) {
       setError(err);
-    } finally {
       setLoading(false);
     }
   };
