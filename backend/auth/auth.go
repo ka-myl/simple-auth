@@ -29,10 +29,6 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-type LoginResponse struct {
-	Token string `json:"token"`
-}
-
 var jwtKey = []byte("some_random_thing")
 var users = make(map[string]User, 10)
 
@@ -82,15 +78,11 @@ func Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	data := LoginResponse{ts}
-	body, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(body)
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth",
+		Value:  ts,
+		MaxAge: 60 * 5,
+	})
 	w.WriteHeader(http.StatusOK)
 }
 

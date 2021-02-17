@@ -17,7 +17,7 @@ const LoginView = () => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:8000/login', { username, password });
+      await axios.post('http://localhost:8000/login', { username, password }, { withCredentials: true });
       history.push('/');
     } catch (err) {
       setError(err);

@@ -17,7 +17,7 @@ const RegisterView = () => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:8000/register', { username, password });
+      await axios.post('http://localhost:8000/register', { username, password }, { withCredentials: true });
       history.push('/login');
     } catch (err) {
       setError(err);
