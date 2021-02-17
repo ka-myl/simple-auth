@@ -24,12 +24,40 @@ type Credentials struct {
 var users = make(map[string]User, 10)
 
 // Login takes typical Credentials and logs user in
-func Login(w http.ResponseWriter, req *http.Request) {}
+func Login(w http.ResponseWriter, req *http.Request) {
+	utils.SetupCorsResponse(&w, req)
+	if req.Method != http.MethodPost {
+		return
+	}
+
+	var cr Credentials
+
+	// Decode json payload from request
+	err := json.NewDecoder(req.Body).Decode(&cr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	user, ok := users[cr.Username]
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.hash), []byte(cr.Password))
+
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
 
 // Register takes typical Credentials and registers user in the (fake) database
 func Register(w http.ResponseWriter, req *http.Request) {
 	utils.SetupCorsResponse(&w, req)
-	if req.Method == http.MethodOptions {
+	if req.Method != http.MethodPost {
 		return
 	}
 
