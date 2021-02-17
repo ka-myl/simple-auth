@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"simple-auth/utils"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,6 +23,17 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
+// Claims represents JWT payload
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+var jwtKey = []byte("some_random_thing")
 var users = make(map[string]User, 10)
 
 // Login takes typical Credentials and logs user in
@@ -38,19 +51,46 @@ func Login(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
+	// Check if given user exists
 	user, ok := users[cr.Username]
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// Compare passwords
 	err = bcrypt.CompareHashAndPassword([]byte(user.hash), []byte(cr.Password))
-
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// Create JWT
+	exp := time.Now().Add(5 * time.Minute)
+	c := Claims{
+		Username: cr.Username,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: exp.Unix(),
+		},
+	}
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+	ts, err := t.SignedString(jwtKey)
+
+	if err != nil {
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	data := LoginResponse{ts}
+	body, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(body)
 	w.WriteHeader(http.StatusOK)
 }
 
