@@ -119,3 +119,25 @@ func Register(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+// IsAuthenticated checks if a request comes from from authenticated user
+func IsAuthenticated(req *http.Request) bool {
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := req.Cookie("auth")
+	if err != nil {
+		return false
+	}
+
+	ts := c.Value
+	claims := &Claims{}
+
+	tkn, err := jwt.ParseWithClaims(ts, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil || !tkn.Valid {
+		return false
+	}
+
+	return true
+}

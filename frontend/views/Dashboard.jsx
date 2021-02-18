@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const DashboardView = () => {
-  const [msg, setMsg] = useState('Nothing yet!')
+  const [msg, setMsg] = useState('Nothing yet!');
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:8000/secret', { withCredentials: true })
+      .then((res) => setMsg(res.data.msg))
+      .catch(setError)
+  }, [])
+
+  console.log('ERROR: ', error)
 
   return (
     <div>
@@ -11,7 +22,11 @@ const DashboardView = () => {
         <Link to="/register">Register</Link>
       </nav>
       <div>
-        Message from the server: {msg}
+        {
+          error
+            ? 'Ooops, something went wrong'
+            : msg
+        }
       </div>
     </div>
   );
