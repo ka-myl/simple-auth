@@ -13,8 +13,6 @@ const DashboardView = () => {
       .catch(setError)
   }, [])
 
-  console.log('ERROR: ', error)
-
   return (
     <div>
       <nav>
