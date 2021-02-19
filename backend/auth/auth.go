@@ -79,9 +79,10 @@ func Login(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:   "auth",
-		Value:  ts,
-		MaxAge: 60 * 5,
+		Name:     "auth",
+		Value:    ts,
+		MaxAge:   60 * 5,
+		HttpOnly: true,
 	})
 	w.WriteHeader(http.StatusOK)
 }
